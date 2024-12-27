@@ -16,7 +16,9 @@ import 'package:kasie_transie_library/widgets/splash_page.dart';
 import 'package:page_transition/page_transition.dart';
 
 import 'firebase_options.dart';
+import 'package:kasie_transie_car_telemetry/car_service_register.dart';
 
+import 'installer.dart';
 late FirebaseApp firebaseApp;
 fb.User? fbAuthedUser;
 late KasieThemeManager kasieThemeManager;
@@ -40,8 +42,7 @@ int themeIndex = 0;
       pp('$mx fbAuthUser: is null. will need to authenticate the app!');
     }
     try {
-      await RegisterServices.register(
-          firebaseStorage: store.FirebaseStorage.instanceFor(app: firebaseApp));
+      await RegisterCarService.register();
     } catch (e) {
       pp('$mx Houston, we have a problem! $e');
     }
@@ -72,7 +73,7 @@ class CarApp extends StatelessWidget {
         animationDuration: const Duration(milliseconds: 2000),
         curve: Curves.easeInCirc,
         splashIconSize: 160.0,
-        nextScreen: const Dashboard(),
+        nextScreen: const Installer(),
         splashTransition: SplashTransition.fadeTransition,
         pageTransitionType: PageTransitionType.leftToRight,
         backgroundColor: Colors.brown.shade800,
