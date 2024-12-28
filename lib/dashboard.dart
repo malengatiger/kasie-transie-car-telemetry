@@ -55,6 +55,7 @@ class DashboardState extends State<Dashboard>
     var userCred2 = await auth.FirebaseAuth.instance
         .signInWithEmailAndPassword(email: email, password: pass);
     pp('$mm ... auth user for car signed in: ${userCred2.user!.email}');
+    _getRoutes();
   }
 
   int arrivalsCount = 0;
