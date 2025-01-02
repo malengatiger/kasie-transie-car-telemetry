@@ -47,7 +47,6 @@ class DashboardState extends State<Dashboard>
     super.initState();
     _listen();
     _signIn();
-    ServicesManager.start(widget.vehicle);
   }
 
   void _signIn() async {
@@ -55,6 +54,8 @@ class DashboardState extends State<Dashboard>
     var userCred2 = await auth.FirebaseAuth.instance
         .signInWithEmailAndPassword(email: email, password: pass);
     pp('$mm ... auth user for car signed in: ${userCred2.user!.email}');
+    ServicesManager.start(widget.vehicle);
+
     _getRoutes();
   }
 
@@ -91,6 +92,9 @@ class DashboardState extends State<Dashboard>
   }
 
   Future<void> _getRoutes() async {
+    setState(() {
+      busy = true;
+    });
     try {
       pp('$mm getAssociationRoutes ...');
       routes = await listApiDog.getAssociationRoutes(
@@ -101,6 +105,9 @@ class DashboardState extends State<Dashboard>
         showErrorToast(message: '$e', context: context);
       }
     }
+    setState(() {
+      busy = false;
+    });
   }
 
   lib.Association? association;

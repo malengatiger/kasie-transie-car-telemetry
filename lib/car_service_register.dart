@@ -16,10 +16,10 @@ import 'package:kasie_transie_library/utils/functions.dart';
 import 'package:kasie_transie_library/utils/prefs.dart';
 import 'package:kasie_transie_library/utils/route_distance_calculator.dart';
 import 'package:kasie_transie_library/utils/route_update_listener.dart';
+import 'package:kasie_transie_library/utils/zip_handler.dart';
 
 import 'package:sembast_web/sembast_web.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 
 class RegisterCarService {
   static const mm = '🅿️🅿️🅿️🅿️ RegisterCarService  🅿️🅿️';
@@ -40,15 +40,17 @@ class RegisterCarService {
     pp('$mm .... ErrorHandler: 🦠errorHandler initialized');
     final SemCache semCache = SemCache();
     pp('$mm .... SemCache: 🦠cache initialized');
-
+    final ZipHandler zipHandler = ZipHandler();
+    pp('$mm .... ZipHandler: 🦠 initialized');
     FCMService fcmService = FCMService(FirebaseMessaging.instance);
     pp('$mm .... FCMService: 🦠 FCMService initialized');
 
     final VehicleTelemetryService telemetryService = VehicleTelemetryService();
     pp('$mm .... VehicleTelemetryService: 🦠telemetryService initialized');
 
-    final listApi =
-    ListApiDog(client,);
+    final listApi = ListApiDog(
+      client,
+    );
     pp('$mm .... ListApiDog: 🦠listApiDog initialized');
 
     DataApiDog dataApiDog = DataApiDog();
@@ -62,11 +64,14 @@ class RegisterCarService {
     pp('$mm 🦠🦠🦠🦠🦠registerLazySingletons ... FCMService');
 
     instance.registerLazySingleton<KasieThemeManager>(
-            () => KasieThemeManager(prefs));
+        () => KasieThemeManager(prefs));
     pp('$mm 🦠🦠🦠🦠🦠registerLazySingletons ... KasieThemeManager');
 
+    instance.registerLazySingleton<ZipHandler>(() => zipHandler);
+    pp('$mm 🦠🦠🦠🦠🦠registerLazySingletons ... ZipHandler');
+
     instance.registerLazySingleton<RouteUpdateListener>(
-            () => RouteUpdateListener());
+        () => RouteUpdateListener());
     pp('$mm 🦠🦠🦠🦠🦠registerLazySingletons ... RouteUpdateListener');
 
     instance
@@ -76,13 +81,12 @@ class RegisterCarService {
     instance.registerLazySingleton<SemCache>(() => semCache);
     pp('$mm 🦠🦠🦠🦠🦠registerLazySingletons ... SemCache');
 
-
     instance.registerLazySingleton<RouteDistanceCalculator>(
-            () => RouteDistanceCalculator(prefs, listApi, DataApiDog()));
+        () => RouteDistanceCalculator(prefs, listApi, DataApiDog()));
     pp('$mm 🦠🦠🦠🦠🦠registerLazySingletons ... RouteDistanceCalculator');
 
     instance.registerLazySingleton<TheGreatGeofencer>(
-            () => TheGreatGeofencer(DataApiDog(), listApi, prefs));
+        () => TheGreatGeofencer(DataApiDog(), listApi, prefs));
     pp('$mm 🦠🦠🦠🦠🦠registerLazySingletons ... TheGreatGeofencer');
 
     instance.registerLazySingleton<ListApiDog>(() => listApi);
@@ -101,8 +105,7 @@ class RegisterCarService {
         .registerLazySingleton<VehicleTelemetryService>(() => telemetryService);
     pp('$mm 🦠🦠🦠🦠🦠registerLazySingletons ... VehicleTelemetryService');
 
-    instance
-        .registerLazySingleton<http.Client>(() => client);
+    instance.registerLazySingleton<http.Client>(() => client);
     pp('$mm 🦠🦠🦠🦠🦠registerLazySingletons ... http.Client');
 
     pp('\n\n$mm  returning message form RegisterService  🍎🍎🍎\n\n');

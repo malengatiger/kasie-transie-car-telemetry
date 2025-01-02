@@ -27,8 +27,12 @@ class ServicesManager {
     //
     geofencer.setRefreshFencesTimer();
     await geofencer.buildGeofences();
+
+
     telemetryService.init();
-    fcmService.subscribeForCar(vehicle, 'CarTelemetry');
+
+    await fcmService.initialize();
+    await fcmService.subscribeForCar(vehicle, 'CarTelemetry');
 
     pp('\n$mm background services started OK 🌿🌿🌿🌿🌿🌿🌿\n');
 

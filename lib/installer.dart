@@ -46,10 +46,10 @@ class InstallerState extends State<Installer>
       await Future.delayed(const Duration(milliseconds: 200));
       if (mounted) {
         NavigationUtils.navigateTo(
-                  context: context,
-                  widget: Dashboard(
-                    vehicle: vehicle!,
-                  ));
+            context: context,
+            widget: Dashboard(
+              vehicle: vehicle!,
+            ));
       }
       return;
     }
@@ -104,28 +104,39 @@ class InstallerState extends State<Installer>
   DataApiDog dataApiDog = GetIt.instance<DataApiDog>();
 
   void _processCar(lib.Vehicle vehicle) async {
-    var token = await fcmService.getFCMToken();
-    if (token != null) {
-      vehicle.fcmToken = token;
-    }
-
-    prefs.saveCar(vehicle);
-    pp('$mm _processCar: vehicle selected: ${vehicle.toJson()}');
-    //create auth user
-    var email = 'car_${vehicle.vehicleId}@car.com';
-    await auth.FirebaseAuth.instance
-        .createUserWithEmailAndPassword(email: email, password: pass);
-    var userCred2 = await auth.FirebaseAuth.instance
-        .signInWithEmailAndPassword(email: email, password: pass);
-    pp('$mm ... auth user for car created and signed in: ${userCred2.user!.email}');
-
-    await dataApiDog.updateVehicle(vehicle);
-    pp('$mm ... vehicle updated, see fcmToken: ${vehicle.toJson()}');
-
-    if (mounted) {
-      Navigator.of(context).pop(vehicle);
-      NavigationUtils.navigateTo(
-          context: context, widget: Dashboard(vehicle: vehicle));
+    try {
+      var token = await fcmService.getFCMToken();
+      if (token != null) {
+            vehicle.fcmToken = token;
+          }
+      prefs.saveCar(vehicle);
+      pp('$mm _processCar: vehicle selected: ${vehicle.toJson()}');
+      //create auth user
+      var email = 'car_${vehicle.vehicleId}@car.com';
+      await auth.FirebaseAuth.instance
+              .createUserWithEmailAndPassword(email: email, password: pass);
+      var userCred2 = await auth.FirebaseAuth.instance
+              .signInWithEmailAndPassword(email: email, password: pass);
+      pp('$mm ... auth user for car created and signed in: ${userCred2.user!.email}');
+      await dataApiDog.updateVehicle(vehicle);
+      pp('$mm ... vehicle updated, see fcmToken: ${vehicle.toJson()}');
+      prefs.saveCar(vehicle);
+      var ass = await listApiDog.getAssociationById(vehicle.associationId!);
+      prefs.saveAssociation(ass!);
+      var sets = await listApiDog.getSettings(vehicle.associationId!, true);
+      if (sets.isNotEmpty) {
+            prefs.saveSettings(sets.last);
+          }
+      if (mounted) {
+            Navigator.of(context).pop(vehicle);
+            NavigationUtils.navigateTo(
+                context: context, widget: Dashboard(vehicle: vehicle));
+          }
+    } catch (e, s) {
+      pp('$e $s');
+      if (mounted) {
+        showErrorToast(message: '$e', context: context);
+      }
     }
   }
 
@@ -199,7 +210,8 @@ class InstallerState extends State<Installer>
                                       children: [
                                         Text(
                                           '${car.vehicleReg}',
-                                          style: myTextStyle(weight: FontWeight.w900),
+                                          style: myTextStyle(
+                                              weight: FontWeight.w900),
                                         )
                                       ],
                                     ),
