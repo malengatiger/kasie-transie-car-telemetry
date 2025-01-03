@@ -105,18 +105,21 @@ class InstallerState extends State<Installer>
 
   void _processCar(lib.Vehicle vehicle) async {
     try {
+      setState(() {
+        busy = true;
+      });
       var token = await fcmService.getFCMToken();
       if (token != null) {
-            vehicle.fcmToken = token;
-          }
+        vehicle.fcmToken = token;
+      }
       prefs.saveCar(vehicle);
       pp('$mm _processCar: vehicle selected: ${vehicle.toJson()}');
       //create auth user
       var email = 'car_${vehicle.vehicleId}@car.com';
       await auth.FirebaseAuth.instance
-              .createUserWithEmailAndPassword(email: email, password: pass);
+          .createUserWithEmailAndPassword(email: email, password: pass);
       var userCred2 = await auth.FirebaseAuth.instance
-              .signInWithEmailAndPassword(email: email, password: pass);
+          .signInWithEmailAndPassword(email: email, password: pass);
       pp('$mm ... auth user for car created and signed in: ${userCred2.user!.email}');
       await dataApiDog.updateVehicle(vehicle);
       pp('$mm ... vehicle updated, see fcmToken: ${vehicle.toJson()}');
@@ -125,19 +128,23 @@ class InstallerState extends State<Installer>
       prefs.saveAssociation(ass!);
       var sets = await listApiDog.getSettings(vehicle.associationId!, true);
       if (sets.isNotEmpty) {
-            prefs.saveSettings(sets.last);
-          }
+        prefs.saveSettings(sets.last);
+      }
+      setState(() {
+        busy = false;
+      });
       if (mounted) {
-            Navigator.of(context).pop(vehicle);
-            NavigationUtils.navigateTo(
-                context: context, widget: Dashboard(vehicle: vehicle));
-          }
+        Navigator.of(context).pop(vehicle);
+        NavigationUtils.navigateTo(
+            context: context, widget: Dashboard(vehicle: vehicle));
+      }
     } catch (e, s) {
       pp('$e $s');
       if (mounted) {
         showErrorToast(message: '$e', context: context);
       }
     }
+
   }
 
   @override
