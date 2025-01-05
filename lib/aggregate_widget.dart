@@ -33,7 +33,7 @@ class AggregateWidget extends StatelessWidget {
       fColor = color!;
     }
     return SizedBox(
-        width: 300,
+        width: 200,
         height: 48,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,

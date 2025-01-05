@@ -11,6 +11,7 @@ import 'package:kasie_transie_library/bloc/list_api_dog.dart';
 import 'package:kasie_transie_library/bloc/the_great_geofencer.dart';
 import 'package:kasie_transie_library/bloc/vehicle_telemetry_service.dart';
 import 'package:kasie_transie_library/data/data_schemas.dart' as lib;
+import 'package:kasie_transie_library/messaging/fcm_bloc.dart';
 import 'package:kasie_transie_library/utils/functions.dart';
 import 'package:kasie_transie_library/utils/navigator_utils.dart';
 import 'package:kasie_transie_library/utils/prefs.dart';
@@ -35,7 +36,11 @@ class DashboardState extends State<Dashboard>
   lib.User? user;
   late StreamSubscription arrivalsSubscription;
   late StreamSubscription telemetrySubscription;
+  late StreamSubscription commuterReqSub;
+
   TheGreatGeofencer geofencer = GetIt.instance<TheGreatGeofencer>();
+  FCMService fcmService = GetIt.instance<FCMService>();
+
   VehicleTelemetryService telemetryService =
       GetIt.instance<VehicleTelemetryService>();
 
@@ -65,6 +70,7 @@ class DashboardState extends State<Dashboard>
   List<lib.VehicleTelemetry> telemetries = [];
 
   List<lib.Route> routes = [];
+  List<lib.CommuterRequest> commuterRequests = [];
   bool busy = false;
   DateFormat df = DateFormat('EEEE, dd MMMM yyyy HH:mm');
   static const tag = 'car', pass = 'pass123';
@@ -76,8 +82,12 @@ class DashboardState extends State<Dashboard>
       arrivals.add(arrival);
       routeName = '${arrival.routeName}';
       landmarkName = arrival.landmarkName!;
+
+      fcmService.subscribeForRouteCommuterRequests(car: widget.vehicle,
+          routeId: arrival.routeId!, app: 'CarTelemetry');
+
       setState(() {
-        arrivalsCount++;
+        arrivalsCount = arrivals.length;
       });
     });
     telemetrySubscription =
@@ -86,9 +96,20 @@ class DashboardState extends State<Dashboard>
       telemetries.add(telemetry);
       lastUpdatedTime = df.format(DateTime.now());
       setState(() {
-        telemetryCount++;
+        telemetryCount = telemetries.length;
       });
     });
+ //
+    commuterReqSub = fcmService.commuterRequestStream.listen((request){
+      pp('$mm CommuterRequest arrived: ${request.toJson()}');
+      commuterRequests.add(request);
+      if (mounted) {
+        setState(() {
+
+        });
+      }
+    });
+
   }
 
   Future<void> _getRoutes() async {
@@ -133,7 +154,7 @@ class DashboardState extends State<Dashboard>
     }
     lib.Route? route;
     lib.VehicleArrival? arrival = arrivals.last;
-    ;
+
     for (var r in routes) {
       if (r.routeId == arrival.routeId) {
         route = r;
@@ -228,7 +249,7 @@ class DashboardState extends State<Dashboard>
             gapH16,
             Expanded(
                 child: SizedBox(
-              width: 600,
+              // width: 900,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -241,6 +262,11 @@ class DashboardState extends State<Dashboard>
                     color: Colors.blue.shade700,
                     title: 'Telemetry',
                     number: telemetryCount,
+                  ),
+                  AggregateWidget(
+                    color: Colors.green.shade700,
+                    title: 'Commuter Requests',
+                    number: commuterRequests.length,
                   ),
                 ],
               ),
@@ -271,57 +297,39 @@ class DashboardState extends State<Dashboard>
                     child: Card(
                         elevation: 8,
                         child: SingleChildScrollView(
-                          child: Column(
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    'Select Route to see Maps ',
-                                    style: myTextStyle(weight: FontWeight.w900),
-                                  ),
-                                  gapW32,
-                                  gapW32,
-                                  IconButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          _showRoutes = false;
-                                        });
-                                      },
-                                      icon: FaIcon(FontAwesomeIcons.xmark)),
-                                ],
-                              ),
-                              gapH16,
-                              Padding(
-                                  padding: EdgeInsets.all(16),
-                                  child: SizedBox(
-                                    height: 300,
-                                    width: 400,
-                                    child: ListView.builder(
-                                        itemCount: arrivalRoutes.length,
-                                        itemBuilder: (ctx, index) {
-                                          var route = arrivalRoutes[index];
-                                          return GestureDetector(
-                                            onTap: () async {
-                                              await NavigationUtils.navigateTo(
-                                                  context: context,
-                                                  widget: MapViewer(
-                                                    route: route,
-                                                  ));
-                                              setState(() {
-                                                _showRoutes = false;
-                                              });
-                                            },
-                                            child: Card(
-                                                child: Padding(
-                                              padding: EdgeInsets.all(16),
-                                              child: Text('${route.name}'),
-                                            )),
-                                          );
-                                        }),
-                                  ))
-                            ],
-                          ),
+                          child: Column(children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Text(
+                                  'Select Route to see Maps ',
+                                  style: myTextStyle(weight: FontWeight.w900),
+                                ),
+                                gapW32,
+                                gapW32,
+                                IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        _showRoutes = false;
+                                      });
+                                    },
+                                    icon: FaIcon(FontAwesomeIcons.xmark)),
+                              ],
+                            ),
+                            gapH16,
+                           Padding(padding: EdgeInsets.symmetric(horizontal: 64), child:  ListOfRoutes(
+                               routes: routes,
+                               onSelected: (r) {
+                                 setState(() {
+                                   _showRoutes = false;
+                                 });
+                                 NavigationUtils.navigateTo(
+                                     context: context,
+                                     widget: MapViewer(
+                                       route: r,
+                                     ));
+                               }),)
+                          ]),
                         )),
                   ),
                 )
@@ -334,4 +342,39 @@ class DashboardState extends State<Dashboard>
   String landmarkName = '';
   String? lastUpdatedTime;
   String routeName = 'Route Landmark Messages';
+}
+
+class ListOfRoutes extends StatelessWidget {
+  final List<lib.Route> routes;
+  final Function(lib.Route) onSelected;
+
+  const ListOfRoutes(
+      {super.key, required this.routes, required this.onSelected});
+  @override
+  Widget build(BuildContext context) {
+    return  SizedBox(height:  600, child:  ListView.builder(
+        itemCount: routes.length,
+        itemBuilder: (ctx, index) {
+          var route = routes[index];
+          return GestureDetector(
+            onTap: () async {
+              await NavigationUtils.navigateTo(
+                  context: context,
+                  widget: MapViewer(
+                    route: route,
+                  ));
+            },
+            child: Card(
+                elevation: 8,
+                child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: InkWell(
+                      onTap: () {
+                        onSelected(route);
+                      },
+                      child: Text('${route.name}'),
+                    ))),
+          );
+        }),);
+  }
 }
