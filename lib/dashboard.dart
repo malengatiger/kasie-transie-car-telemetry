@@ -113,30 +113,36 @@ class DashboardState extends State<Dashboard>
 
   late Timer timer;
   _startTimer() {
-    timer = Timer.periodic(const Duration(seconds: 30), (timer){
-      _filterCommuterRequests(commuterRequests);
+    timer = Timer.periodic(const Duration(seconds: 60), (timer) {
+      pp('$mm _filterCommuterRequests: Timer tick #${timer.tick} ');
       if (mounted) {
         _filterCommuterRequests(commuterRequests);
       }
     });
   }
-  List<lib.CommuterRequest> _filterCommuterRequests(List<lib.CommuterRequest> requests) {
+
+  List<lib.CommuterRequest> _filterCommuterRequests(
+      List<lib.CommuterRequest> requests) {
     pp('$mm _filterCommuterRequests arrived: ${requests.length}');
 
     List<lib.CommuterRequest> filtered = [];
-    DateTime now = DateTime.now();
-   for (var r in requests) {
-     var date = DateTime.parse(r.dateRequested!).toLocal();
-     var difference = now.difference(date);
-     pp('$mm _filterCommuterRequests difference: $difference');
+    DateTime now = DateTime.now().toUtc();
+    for (var r in requests) {
+      var date = DateTime.parse(r.dateRequested!);
+      var difference = now.difference(date);
+      pp('$mm _filterCommuterRequests difference: $difference');
 
-     if (difference <= const Duration(hours: 1)) {
-       filtered.add(r);
-     }
-   }
+      if (difference <= const Duration(hours: 1)) {
+        filtered.add(r);
+      }
+    }
     pp('$mm _filterCommuterRequests filtered: ${filtered.length}');
+    setState(() {
+      commuterRequests = filtered;
+    });
     return filtered;
   }
+
   Future<void> _getRoutes() async {
     setState(() {
       busy = true;
