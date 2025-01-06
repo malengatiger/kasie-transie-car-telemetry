@@ -52,6 +52,7 @@ class DashboardState extends State<Dashboard>
     super.initState();
     _listen();
     _signIn();
+    _startTimer();
   }
 
   void _signIn() async {
@@ -82,14 +83,14 @@ class DashboardState extends State<Dashboard>
       arrivals.add(arrival);
       routeName = '${arrival.routeName}';
       landmarkName = arrival.landmarkName!;
-
-      fcmService.subscribeForRouteCommuterRequests(car: widget.vehicle,
-          routeId: arrival.routeId!, app: 'CarTelemetry');
-
+      //
+      fcmService.subscribeForRouteCommuterRequests(
+          car: widget.vehicle, routeId: arrival.routeId!, app: 'CarTelemetry');
       setState(() {
         arrivalsCount = arrivals.length;
       });
     });
+    //
     telemetrySubscription =
         telemetryService.telemetryStream.listen((telemetry) {
       pp('$mm telemetry arrived: ${telemetry.toJson()}');
@@ -99,19 +100,43 @@ class DashboardState extends State<Dashboard>
         telemetryCount = telemetries.length;
       });
     });
- //
-    commuterReqSub = fcmService.commuterRequestStream.listen((request){
+    //
+    commuterReqSub = fcmService.commuterRequestStream.listen((request) {
       pp('$mm CommuterRequest arrived: ${request.toJson()}');
       commuterRequests.add(request);
+      commuterRequests = _filterCommuterRequests(commuterRequests);
       if (mounted) {
-        setState(() {
-
-        });
+        setState(() {});
       }
     });
-
   }
 
+  late Timer timer;
+  _startTimer() {
+    timer = Timer.periodic(const Duration(seconds: 30), (timer){
+      _filterCommuterRequests(commuterRequests);
+      if (mounted) {
+        _filterCommuterRequests(commuterRequests);
+      }
+    });
+  }
+  List<lib.CommuterRequest> _filterCommuterRequests(List<lib.CommuterRequest> requests) {
+    pp('$mm _filterCommuterRequests arrived: ${requests.length}');
+
+    List<lib.CommuterRequest> filtered = [];
+    DateTime now = DateTime.now();
+   for (var r in requests) {
+     var date = DateTime.parse(r.dateRequested!).toLocal();
+     var difference = now.difference(date);
+     pp('$mm _filterCommuterRequests difference: $difference');
+
+     if (difference <= const Duration(hours: 1)) {
+       filtered.add(r);
+     }
+   }
+    pp('$mm _filterCommuterRequests filtered: ${filtered.length}');
+    return filtered;
+  }
   Future<void> _getRoutes() async {
     setState(() {
       busy = true;
@@ -317,18 +342,21 @@ class DashboardState extends State<Dashboard>
                               ],
                             ),
                             gapH16,
-                           Padding(padding: EdgeInsets.symmetric(horizontal: 64), child:  ListOfRoutes(
-                               routes: routes,
-                               onSelected: (r) {
-                                 setState(() {
-                                   _showRoutes = false;
-                                 });
-                                 NavigationUtils.navigateTo(
-                                     context: context,
-                                     widget: MapViewer(
-                                       route: r,
-                                     ));
-                               }),)
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 64),
+                              child: ListOfRoutes(
+                                  routes: routes,
+                                  onSelected: (r) {
+                                    setState(() {
+                                      _showRoutes = false;
+                                    });
+                                    NavigationUtils.navigateTo(
+                                        context: context,
+                                        widget: MapViewer(
+                                          route: r,
+                                        ));
+                                  }),
+                            )
                           ]),
                         )),
                   ),
@@ -352,29 +380,32 @@ class ListOfRoutes extends StatelessWidget {
       {super.key, required this.routes, required this.onSelected});
   @override
   Widget build(BuildContext context) {
-    return  SizedBox(height:  600, child:  ListView.builder(
-        itemCount: routes.length,
-        itemBuilder: (ctx, index) {
-          var route = routes[index];
-          return GestureDetector(
-            onTap: () async {
-              await NavigationUtils.navigateTo(
-                  context: context,
-                  widget: MapViewer(
-                    route: route,
-                  ));
-            },
-            child: Card(
-                elevation: 8,
-                child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: InkWell(
-                      onTap: () {
-                        onSelected(route);
-                      },
-                      child: Text('${route.name}'),
-                    ))),
-          );
-        }),);
+    return SizedBox(
+      height: 600,
+      child: ListView.builder(
+          itemCount: routes.length,
+          itemBuilder: (ctx, index) {
+            var route = routes[index];
+            return GestureDetector(
+              onTap: () async {
+                await NavigationUtils.navigateTo(
+                    context: context,
+                    widget: MapViewer(
+                      route: route,
+                    ));
+              },
+              child: Card(
+                  elevation: 8,
+                  child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: InkWell(
+                        onTap: () {
+                          onSelected(route);
+                        },
+                        child: Text('${route.name}'),
+                      ))),
+            );
+          }),
+    );
   }
 }

@@ -19,12 +19,12 @@ class ServicesManager {
   static start(Vehicle vehicle) async {
     pp('\n\n$mm start background services ... \n');
     myPrettyJsonPrint(vehicle.toJson());
+
     geofencer = GetIt.instance<TheGreatGeofencer>();
     telemetryService = GetIt.instance<VehicleTelemetryService>();
     prefs  = GetIt.instance<Prefs>();
     listApiDog = GetIt.instance<ListApiDog>();
     fcmService = GetIt.instance<FCMService>();
-
 
     geofencer.setRefreshFencesTimer();
     await geofencer.buildGeofences();
