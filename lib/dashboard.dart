@@ -18,6 +18,7 @@ import 'package:kasie_transie_library/utils/prefs.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'association_list.dart';
 import 'map_viewer.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key, required this.vehicle});
@@ -84,8 +85,7 @@ class DashboardState extends State<Dashboard>
       routeName = '${arrival.routeName}';
       landmarkName = arrival.landmarkName!;
       //
-      fcmService.subscribeForRouteCommuterRequests(
-          car: widget.vehicle, routeId: arrival.routeId!, app: 'CarTelemetry');
+      fcmService.subscribeForRouteCommuterRequests( routeId: arrival.routeId!, app: 'CarTelemetry');
       setState(() {
         arrivalsCount = arrivals.length;
       });
@@ -105,6 +105,8 @@ class DashboardState extends State<Dashboard>
       pp('$mm CommuterRequest arrived: ${request.toJson()}');
       commuterRequests.add(request);
       commuterRequests = _filterCommuterRequests(commuterRequests);
+      lastUpdatedTime = df.format(DateTime.now());
+
       if (mounted) {
         setState(() {});
       }
@@ -121,6 +123,17 @@ class DashboardState extends State<Dashboard>
     });
   }
 
+  void _getCommuterRequests(lib.Route route) async {
+
+    var date = DateTime.now().toUtc().subtract(const Duration(hours: 1));
+    commuterRequests = await listApiDog.getRouteCommuterRequests(routeId: route.routeId!,
+        startDate: date.toIso8601String());
+    if (mounted) {
+      setState(() {
+
+      });
+    }
+  }
   List<lib.CommuterRequest> _filterCommuterRequests(
       List<lib.CommuterRequest> requests) {
     pp('$mm _filterCommuterRequests arrived: ${requests.length}');
@@ -294,11 +307,22 @@ class DashboardState extends State<Dashboard>
                     title: 'Telemetry',
                     number: telemetryCount,
                   ),
-                  AggregateWidget(
-                    color: Colors.green.shade700,
-                    title: 'Commuter Requests',
-                    number: commuterRequests.length,
-                  ),
+                  GestureDetector(
+                    onTap: (){
+                      showToast(
+                          backgroundColor:  Colors.pink.shade700,
+                          textStyle:  myTextStyle(color: Colors.white),
+                          padding: 28,
+                          toastGravity:  ToastGravity.BOTTOM,
+                          duration: const Duration(seconds: 3),
+                          message: 'Under construction. Will show commuters on map when done!', context: context);
+                    },
+                    child: AggregateWidget(
+                      color: Colors.green.shade700,
+                      title: 'Commuter Requests',
+                      number: _getPassengers(),
+                    ),
+                  )
                 ],
               ),
             )),
@@ -372,7 +396,13 @@ class DashboardState extends State<Dashboard>
       ),
     );
   }
-
+  _getPassengers() {
+    var cnt = 0;
+    for (var req in commuterRequests) {
+      cnt += req.numberOfPassengers!;
+    }
+    return cnt;
+  }
   String landmarkName = '';
   String? lastUpdatedTime;
   String routeName = 'Route Landmark Messages';
