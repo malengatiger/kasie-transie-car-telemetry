@@ -10,6 +10,7 @@ class AggregateWidget extends StatelessWidget {
     this.color,
     this.padding,
     this.fontSize,
+    required this.isBadge,
   });
 
   final String title;
@@ -17,11 +18,12 @@ class AggregateWidget extends StatelessWidget {
   final Color? color;
   final double? padding;
   final double? fontSize;
+  final bool isBadge;
 
   @override
   Widget build(BuildContext context) {
-    double mPad = 12.0;
-    double fSize = 12.0;
+    double mPad = 4.0;
+    double fSize = 14.0;
     Color fColor = Colors.red;
     if (padding != null) {
       mPad = padding!;
@@ -33,26 +35,40 @@ class AggregateWidget extends StatelessWidget {
       fColor = color!;
     }
     return SizedBox(
-        width: 200,
-        height: 48,
+        width: 240,
+        height: 100,
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
+            gapW32, gapW32,
             SizedBox(
                 width: 100,
                 child: Text(
                   title,
-                  style: myTextStyle(fontSize: fSize, ),
+                  style: myTextStyle(
+                    fontSize: fSize,
+                  ),
                 )),
-            // gapW32,
-            bd.Badge(
-              badgeContent: Text(
-                number.toString(),
-                style: myTextStyle(color: Colors.white, ),
-              ),
-              badgeStyle: bd.BadgeStyle(
-                  badgeColor: fColor, padding: EdgeInsets.all(mPad)),
-            ),
+            gapW4,
+            isBadge
+                ? bd.Badge(
+                    badgeContent: Text(
+                      number.toString(),
+                      style: myTextStyle(color: Colors.white, fontSize: 12),
+                    ),
+                    badgeStyle: bd.BadgeStyle(
+                        badgeColor: fColor, padding: EdgeInsets.all(mPad)),
+                  )
+                : Expanded(
+                    child: SizedBox(
+                    height: 24,
+                    width: 140,
+                    child: Text(
+                      number.toString(),
+                      style: myTextStyle(
+                          color: fColor, fontSize: 24, weight: FontWeight.w900),
+                    ),
+                  ))
           ],
         ));
   }

@@ -112,7 +112,6 @@ class InstallerState extends State<Installer>
       if (token != null) {
         vehicle.fcmToken = token;
       }
-      prefs.saveCar(vehicle);
       pp('$mm _processCar: vehicle selected: ${vehicle.toJson()}');
       //create auth user
       var email = 'car_${vehicle.vehicleId}@car.com';
@@ -155,7 +154,7 @@ class InstallerState extends State<Installer>
       ),
       body: SafeArea(
         child: Stack(children: [
-          Column(
+          Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(cars.isEmpty ? 'Associations' : "Vehicles"),
               Text(cars.isEmpty
@@ -208,7 +207,7 @@ class InstallerState extends State<Installer>
                               return Card(
                                 elevation: 4,
                                 child: Padding(
-                                  padding: EdgeInsets.all(16),
+                                  padding: EdgeInsets.all(8),
                                   child: InkWell(
                                     onTap: () async {
                                       _processCar(car);
@@ -217,7 +216,7 @@ class InstallerState extends State<Installer>
                                       children: [
                                         Text(
                                           '${car.vehicleReg}',
-                                          style: myTextStyle(
+                                          style: myTextStyle(fontSize: 14,
                                               weight: FontWeight.w900),
                                         )
                                       ],

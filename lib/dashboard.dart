@@ -7,16 +7,17 @@ import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 import 'package:kasie_transie_car_telemetry/aggregate_widget.dart';
 import 'package:kasie_transie_car_telemetry/services_manager.dart';
+import 'package:kasie_transie_library/bloc/data_api_dog.dart';
 import 'package:kasie_transie_library/bloc/list_api_dog.dart';
 import 'package:kasie_transie_library/bloc/the_great_geofencer.dart';
 import 'package:kasie_transie_library/bloc/vehicle_telemetry_service.dart';
 import 'package:kasie_transie_library/data/data_schemas.dart' as lib;
 import 'package:kasie_transie_library/messaging/fcm_bloc.dart';
+import 'package:kasie_transie_library/utils/device_location_bloc.dart';
 import 'package:kasie_transie_library/utils/functions.dart';
 import 'package:kasie_transie_library/utils/navigator_utils.dart';
 import 'package:kasie_transie_library/utils/prefs.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
-import 'association_list.dart';
 import 'map_viewer.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
@@ -33,11 +34,15 @@ class DashboardState extends State<Dashboard>
   late AnimationController _controller;
   Prefs prefs = GetIt.instance<Prefs>();
   ListApiDog listApiDog = GetIt.instance<ListApiDog>();
+  DeviceLocationBloc dlb = GetIt.instance<DeviceLocationBloc>();
+  DataApiDog dataApiDog = GetIt.instance<DataApiDog>();
 
   lib.User? user;
-  late StreamSubscription arrivalsSubscription;
-  late StreamSubscription telemetrySubscription;
-  late StreamSubscription commuterReqSub;
+  late StreamSubscription<lib.VehicleArrival> arrivalsSubscription;
+  late StreamSubscription<lib.VehicleTelemetry> telemetrySubscription;
+  late StreamSubscription<lib.CommuterRequest> commuterReqSub;
+  late StreamSubscription<lib.LocationRequest> locationRequestSub;
+  late StreamSubscription<lib.DispatchRecord> dispatchSub;
 
   TheGreatGeofencer geofencer = GetIt.instance<TheGreatGeofencer>();
   FCMService fcmService = GetIt.instance<FCMService>();
@@ -85,7 +90,8 @@ class DashboardState extends State<Dashboard>
       routeName = '${arrival.routeName}';
       landmarkName = arrival.landmarkName!;
       //
-      fcmService.subscribeForRouteCommuterRequests( routeId: arrival.routeId!, app: 'CarTelemetry');
+      fcmService.subscribeForRouteCommuterRequests(
+          routeId: arrival.routeId!, app: 'CarTelemetry');
       setState(() {
         arrivalsCount = arrivals.length;
       });
@@ -111,6 +117,46 @@ class DashboardState extends State<Dashboard>
         setState(() {});
       }
     });
+    locationRequestSub = fcmService.locationRequestStream.listen((request) {
+      pp('$mm locationRequestStream delivered arrived: ${request.toJson()}');
+
+      if (widget.vehicle.vehicleId == request.vehicleId) {
+        _respondToRequest(request);
+      }
+      lastUpdatedTime = df.format(DateTime.now());
+
+      if (mounted) {
+        setState(() {});
+      }
+    });
+    dispatchSub = fcmService.dispatchStream.listen((request) {
+      pp('$mm dispatchStream delivered: ${request.toJson()}');
+
+      if (widget.vehicle.vehicleId == request.vehicleId) {
+        lastUpdatedTime = df.format(DateTime.now());
+        if (mounted) {
+          showOKToast(
+              duration: const Duration(seconds: 5),
+              toastGravity: ToastGravity.BOTTOM,
+              message: 'Taxi has been dispatched with ${request.passengers}',
+              context: context);
+        }
+      }
+    });
+  }
+
+  void _respondToRequest(lib.LocationRequest request) async {
+    var loc = await dlb.getLocation();
+    var locationResponse = lib.LocationResponse(
+        vehicleId: widget.vehicle.vehicleId,
+        vehicleReg: widget.vehicle.vehicleReg,
+        associationId: widget.vehicle.associationId,
+        position: lib.Position(coordinates: [loc.longitude, loc.latitude]),
+        fcmToken: request.fcmToken,
+        vehicleFcmToken: widget.vehicle.fcmToken);
+
+    await dataApiDog.addLocationResponse(locationResponse);
+    pp('$mm location response has been sent');
   }
 
   late Timer timer;
@@ -124,16 +170,14 @@ class DashboardState extends State<Dashboard>
   }
 
   void _getCommuterRequests(lib.Route route) async {
-
     var date = DateTime.now().toUtc().subtract(const Duration(hours: 1));
-    commuterRequests = await listApiDog.getRouteCommuterRequests(routeId: route.routeId!,
-        startDate: date.toIso8601String());
+    commuterRequests = await listApiDog.getRouteCommuterRequests(
+        routeId: route.routeId!, startDate: date.toIso8601String());
     if (mounted) {
-      setState(() {
-
-      });
+      setState(() {});
     }
   }
+
   List<lib.CommuterRequest> _filterCommuterRequests(
       List<lib.CommuterRequest> requests) {
     pp('$mm _filterCommuterRequests arrived: ${requests.length}');
@@ -293,32 +337,34 @@ class DashboardState extends State<Dashboard>
             gapH16,
             Expanded(
                 child: SizedBox(
-              // width: 900,
+              height: 100,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   AggregateWidget(
                     title: 'Arrivals',
                     number: arrivalsCount,
-                    color: Colors.pink,
+                    color: Colors.pink, isBadge: false,
                   ),
                   AggregateWidget(
-                    color: Colors.blue.shade700,
+                    color: Colors.blue.shade700, isBadge: false,
                     title: 'Telemetry',
                     number: telemetryCount,
                   ),
                   GestureDetector(
-                    onTap: (){
+                    onTap: () {
                       showToast(
-                          backgroundColor:  Colors.pink.shade700,
-                          textStyle:  myTextStyle(color: Colors.white),
+                          backgroundColor: Colors.pink.shade700,
+                          textStyle: myTextStyle(color: Colors.white),
                           padding: 28,
-                          toastGravity:  ToastGravity.BOTTOM,
+                          toastGravity: ToastGravity.BOTTOM,
                           duration: const Duration(seconds: 3),
-                          message: 'Under construction. Will show commuters on map when done!', context: context);
+                          message:
+                              'Under construction. Will show commuters on map when done!',
+                          context: context);
                     },
                     child: AggregateWidget(
-                      color: Colors.green.shade700,
+                      color: Colors.green.shade700, isBadge: false,
                       title: 'Commuter Requests',
                       number: _getPassengers(),
                     ),
@@ -396,6 +442,7 @@ class DashboardState extends State<Dashboard>
       ),
     );
   }
+
   _getPassengers() {
     var cnt = 0;
     for (var req in commuterRequests) {
@@ -403,6 +450,7 @@ class DashboardState extends State<Dashboard>
     }
     return cnt;
   }
+
   String landmarkName = '';
   String? lastUpdatedTime;
   String routeName = 'Route Landmark Messages';
