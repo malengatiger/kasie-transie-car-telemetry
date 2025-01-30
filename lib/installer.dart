@@ -129,9 +129,7 @@ class InstallerState extends State<Installer>
       if (sets.isNotEmpty) {
         prefs.saveSettings(sets.last);
       }
-      setState(() {
-        busy = false;
-      });
+
       if (mounted) {
         Navigator.of(context).pop(vehicle);
         NavigationUtils.navigateTo(
@@ -143,7 +141,9 @@ class InstallerState extends State<Installer>
         showErrorToast(message: '$e', context: context);
       }
     }
-
+    setState(() {
+      busy = false;
+    });
   }
 
   @override

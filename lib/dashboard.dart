@@ -1,7 +1,9 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
@@ -17,14 +19,15 @@ import 'package:kasie_transie_library/utils/device_location_bloc.dart';
 import 'package:kasie_transie_library/utils/functions.dart';
 import 'package:kasie_transie_library/utils/navigator_utils.dart';
 import 'package:kasie_transie_library/utils/prefs.dart';
-import 'package:firebase_auth/firebase_auth.dart' as auth;
+import 'package:kasie_transie_library/widgets/vehicle_widgets/fuel_top_up_widget.dart';
+
 import 'map_viewer.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key, required this.vehicle});
 
   final lib.Vehicle vehicle;
+
   @override
   DashboardState createState() => DashboardState();
 }
@@ -160,6 +163,7 @@ class DashboardState extends State<Dashboard>
   }
 
   late Timer timer;
+
   _startTimer() {
     timer = Timer.periodic(const Duration(seconds: 60), (timer) {
       pp('$mm _filterCommuterRequests: Timer tick #${timer.tick} ');
@@ -282,25 +286,40 @@ class DashboardState extends State<Dashboard>
                 Card(
                   elevation: 8,
                   child: Padding(
-                      padding: EdgeInsets.all(16),
-                      child: SizedBox(
-                          width: 300,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                '${widget.vehicle.vehicleReg}',
-                                style: myTextStyle(
-                                    fontSize: 36, weight: FontWeight.w900),
-                              ),
-                            ],
-                          ))),
+                    padding: EdgeInsets.all(16),
+                    child: SizedBox(
+                      width: 400,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Text(
+                            '${widget.vehicle.vehicleReg}',
+                            style: myTextStyle(
+                                fontSize: 36, weight: FontWeight.w900),
+                          ),
+                          gapW32,
+                          gapW32,
+                          IconButton(
+                              onPressed: () {
+                                NavigationUtils.navigateTo(
+                                    context: context,
+                                    widget: FuelTopUpWidget(
+                                      vehicle: widget.vehicle,
+                                      isLandscape: true,
+                                    ));
+                              },
+                              icon: FaIcon(FontAwesomeIcons.gasPump,
+                                  color: Colors.pink)),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
             gapH8,
             Text(
-              '${widget.vehicle!.associationName}',
+              '${widget.vehicle.associationName}',
               style: myTextStyle(weight: FontWeight.w900, fontSize: 20),
             ),
             gapH16,
@@ -344,10 +363,12 @@ class DashboardState extends State<Dashboard>
                   AggregateWidget(
                     title: 'Arrivals',
                     number: arrivalsCount,
-                    color: Colors.pink, isBadge: false,
+                    color: Colors.pink,
+                    isBadge: false,
                   ),
                   AggregateWidget(
-                    color: Colors.blue.shade700, isBadge: false,
+                    color: Colors.blue.shade700,
+                    isBadge: false,
                     title: 'Telemetry',
                     number: telemetryCount,
                   ),
@@ -364,7 +385,8 @@ class DashboardState extends State<Dashboard>
                           context: context);
                     },
                     child: AggregateWidget(
-                      color: Colors.green.shade700, isBadge: false,
+                      color: Colors.green.shade700,
+                      isBadge: false,
                       title: 'Commuter Requests',
                       number: _getPassengers(),
                     ),
@@ -453,7 +475,7 @@ class DashboardState extends State<Dashboard>
 
   String landmarkName = '';
   String? lastUpdatedTime;
-  String routeName = 'Route Landmark Messages';
+  String routeName = 'Route Landmark Messages ...';
 }
 
 class ListOfRoutes extends StatelessWidget {
@@ -462,6 +484,7 @@ class ListOfRoutes extends StatelessWidget {
 
   const ListOfRoutes(
       {super.key, required this.routes, required this.onSelected});
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
