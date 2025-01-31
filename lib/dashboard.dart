@@ -87,7 +87,7 @@ class DashboardState extends State<Dashboard>
 
   _listen() {
     arrivalsSubscription = geofencer.vehicleArrivalStream.listen((arrival) {
-      pp('$mm car arrived at landmark: ${arrival.toJson()}');
+      pp('$mm car arrived at landmark: ${arrival.vehicleReg} - ${arrival.landmarkName}');
       lastUpdatedTime = df.format(DateTime.now());
       arrivals.add(arrival);
       routeName = '${arrival.routeName}';
@@ -102,7 +102,7 @@ class DashboardState extends State<Dashboard>
     //
     telemetrySubscription =
         telemetryService.telemetryStream.listen((telemetry) {
-      pp('$mm telemetry arrived: ${telemetry.toJson()}');
+      pp('$mm telemetry arrived: ${telemetry.vehicleReg}');
       telemetries.add(telemetry);
       lastUpdatedTime = df.format(DateTime.now());
       setState(() {
@@ -184,20 +184,20 @@ class DashboardState extends State<Dashboard>
 
   List<lib.CommuterRequest> _filterCommuterRequests(
       List<lib.CommuterRequest> requests) {
-    pp('$mm _filterCommuterRequests arrived: ${requests.length}');
+    // pp('$mm _filterCommuterRequests arrived: ${requests.length}');
 
     List<lib.CommuterRequest> filtered = [];
     DateTime now = DateTime.now().toUtc();
     for (var r in requests) {
       var date = DateTime.parse(r.dateRequested!);
       var difference = now.difference(date);
-      pp('$mm _filterCommuterRequests difference: $difference');
+      // pp('$mm _filterCommuterRequests difference: $difference');
 
       if (difference <= const Duration(hours: 1)) {
         filtered.add(r);
       }
     }
-    pp('$mm _filterCommuterRequests filtered: ${filtered.length}');
+    // pp('$mm _filterCommuterRequests filtered: ${filtered.length}');
     setState(() {
       commuterRequests = filtered;
     });
