@@ -759,6 +759,13 @@
             </list>
           </value>
         </entry>
+        <entry key="flutter_data_table">
+          <value>
+            <list>
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_data_table-2.0.0/lib" />
+            </list>
+          </value>
+        </entry>
         <entry key="flutter_dotenv">
           <value>
             <list>
@@ -2350,6 +2357,7 @@
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_activity_recognition-3.1.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_analog_clock-1.0.3/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_cache_manager-3.4.1/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_data_table-2.0.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_dotenv-5.2.1/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_easyloading-3.0.5/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_image_compress-2.4.0/lib" />

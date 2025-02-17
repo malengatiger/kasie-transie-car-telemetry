@@ -11,7 +11,7 @@ import 'package:kasie_transie_library/utils/prefs.dart';
 import 'package:kasie_transie_library/widgets/timer_widget.dart';
 
 import 'dashboard.dart';
-
+import 'package:firebase_messaging/firebase_messaging.dart' as fbm;
 class Installer extends StatefulWidget {
   const Installer({super.key});
 
@@ -102,6 +102,7 @@ class InstallerState extends State<Installer>
 
   FCMService fcmService = GetIt.instance<FCMService>();
   DataApiDog dataApiDog = GetIt.instance<DataApiDog>();
+  fbm.FirebaseMessaging messaging = fbm.FirebaseMessaging.instance;
 
   void _processCar(lib.Vehicle vehicle) async {
     try {
@@ -120,6 +121,7 @@ class InstallerState extends State<Installer>
       var userCred2 = await auth.FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: pass);
       pp('$mm ... auth user for car created and signed in: ${userCred2.user!.email}');
+
       await dataApiDog.updateVehicle(vehicle);
       pp('$mm ... vehicle updated, see fcmToken: ${vehicle.toJson()}');
       prefs.saveCar(vehicle);

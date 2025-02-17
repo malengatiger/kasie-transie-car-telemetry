@@ -75,7 +75,7 @@ class AssociationVehicleFinderState extends State<AssociationVehicleFinder>
     vehicle = await NavigationUtils.navigateTo(
         context: context,
         widget: VehicleSearch(
-          associationId: association!.associationId!,
+          associationId: association!.associationId!, showGrid: false,
         ));
     if (vehicle != null) {
       prefs.saveCar(vehicle!);
