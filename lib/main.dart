@@ -21,7 +21,7 @@ late KasieThemeManager kasieThemeManager;
 lib.User? me;
 int themeIndex = 0;
 
-  const mx = '🔵🔵🔵🔵🔵🔵🔵🔵🔵🔵 🐸 KasieTransie Car App 🐸 🔵🔵';
+  const mx = '🔵🔵🔵🔵🔵🔵🔵 🐸 KasieTransie Car App 🐸 🔵🔵';
 
   Future<void> main() async {
     WidgetsFlutterBinding.ensureInitialized();
