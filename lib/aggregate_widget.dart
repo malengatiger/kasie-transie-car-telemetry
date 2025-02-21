@@ -36,7 +36,7 @@ class AggregateWidget extends StatelessWidget {
     }
     return SizedBox(
         width: 240,
-        height: 100,
+        height: 120,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
@@ -61,7 +61,7 @@ class AggregateWidget extends StatelessWidget {
                   )
                 : Expanded(
                     child: SizedBox(
-                    height: 24,
+                    height: 36,
                     width: 140,
                     child: Text(
                       number.toString(),

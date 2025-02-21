@@ -368,7 +368,7 @@ class DashboardState extends State<Dashboard>
             gapH16,
             Expanded(
                 child: SizedBox(
-              height: 100,
+              height: 160,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -399,7 +399,7 @@ class DashboardState extends State<Dashboard>
                     child: AggregateWidget(
                       color: Colors.green.shade700,
                       isBadge: false,
-                      title: 'Commuter Requests',
+                      title: 'Commuters',
                       number: _getPassengers(),
                     ),
                   )
