@@ -1,0 +1,2 @@
+/Users/aubreymalabie/Work/MLB/kasie/kasie-transie-car-telemetry/android/app/.cxx/Debug/ri5l92c4/x86/CMakeFiles/edit_cache.dir
+/Users/aubreymalabie/Work/MLB/kasie/kasie-transie-car-telemetry/android/app/.cxx/Debug/ri5l92c4/x86/CMakeFiles/rebuild_cache.dir
