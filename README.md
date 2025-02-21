@@ -15,7 +15,12 @@ Each installed app belongs to an Association/Organization. The specific Associat
 ## Dashboard
 The Dashboard for the Car Telemetry app. The app is dynamic and will pick out the landmarks, the telemetry and will acknowledge a dispatch command.
 
-![Screenshot_20250102_223705](https://github.com/user-attachments/assets/377cdf08-b4bd-4070-af6d-bdd53feb46b6)
+![Screenshot_20250221_141656](https://github.com/user-attachments/assets/8295fe37-be5f-4d52-96cd-d14ca4c60e86)
+![Screenshot_20250221_141549](https://github.com/user-attachments/assets/633790aa-b0d0-404e-becb-3c52a4fa644c)
+
+![Screenshot_20250221_142714](https://github.com/user-attachments/assets/61b32247-b8b3-4104-b755-e987bd6311ad)
+![Screenshot_20250221_142628](https://github.com/user-attachments/assets/11ebc69b-f89e-466c-bea9-ea495973a47f)
+
 
 ## Data Elements
 
