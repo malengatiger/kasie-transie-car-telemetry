@@ -20,7 +20,7 @@ import 'package:kasie_transie_library/utils/functions.dart';
 import 'package:kasie_transie_library/utils/navigator_utils.dart';
 import 'package:kasie_transie_library/utils/prefs.dart';
 import 'package:kasie_transie_library/widgets/qrcodes/qr_code_viewer.dart';
-import 'package:kasie_transie_library/widgets/vehicle_widgets/fuel_top_up_widget.dart';
+import 'package:kasie_transie_library/widgets/vehicle_widgets/fuel_top_up_landscape_widget.dart';
 
 import 'map_viewer.dart';
 
@@ -304,9 +304,8 @@ class DashboardState extends State<Dashboard>
                               onPressed: () {
                                 NavigationUtils.navigateTo(
                                     context: context,
-                                    widget: FuelTopUpWidget(
+                                    widget: FuelTopUpLandscapeWidget(
                                       vehicle: widget.vehicle,
-                                      isLandscape: true,
                                     ));
                               },
                               icon: FaIcon(FontAwesomeIcons.gasPump,
